@@ -5,10 +5,8 @@ DATA_DIR=/var/otp/data
 GRAPH="$DATA_DIR/graph.obj"
 RELEASE_URL="https://github.com/RuetGG/OTP-Setup-V3/releases/download/v1/graph.obj"
 
-# Ensure data directory exists
 mkdir -p "$DATA_DIR"
 
-# Download graph.obj if missing
 if [ ! -f "$GRAPH" ]; then
   echo "graph.obj not found. Downloading from GitHub Releases..."
   i=0
@@ -35,16 +33,9 @@ else
   echo "graph.obj already present, skipping download."
 fi
 
-# Show contents of data dir for logs
 echo "Contents of $DATA_DIR:"
 ls -lh "$DATA_DIR" || true
 
-# Start OTP using the image's entrypoint script
-echo "Starting OTP (via /docker-entrypoint.sh)..."
-
-# ⚡ Pass each argument separately!
-exec /docker-entrypoint.sh \
-  --load "$DATA_DIR" \
-  --serve \
-  --port 8080 \
-  --bind 0.0.0.0
+echo "Starting OTP via java -jar (direct run)..."
+# Adjust memory if you need more; this is a conservative default.
+exec java -Xmx1G -Xms512M -jar /usr/local/share/java/otp.jar --load "$DATA_DIR" --serve --port 8080 --bind 0.0.0.0
