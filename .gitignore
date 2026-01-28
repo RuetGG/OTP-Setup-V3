@@ -1,0 +1,14 @@
+# .gitignore
+data/graph.obj
+
+# or if your data is in data/
+data/*.pbf
+
+venv/
+__pycache__/
+.DS_Store
+*.log
+*.pyc
+*.swp
+
+otp.jar
