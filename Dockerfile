@@ -3,9 +3,6 @@ FROM eclipse-temurin:17-jdk
 
 WORKDIR /otp
 
-# Copy local OTP jar into the container
-COPY otp.jar /otp/otp.jar
-
 # Create data folder
 RUN mkdir -p /otp/data
 
