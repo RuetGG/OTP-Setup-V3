@@ -41,4 +41,10 @@ ls -lh "$DATA_DIR" || true
 
 # Start OTP using the image's entrypoint script
 echo "Starting OTP (via /docker-entrypoint.sh)..."
-exec /docker-entrypoint.sh --load "$DATA_DIR" --serve --port 8080 --bind 0.0.0.0
+
+# ⚡ Pass each argument separately!
+exec /docker-entrypoint.sh \
+  --load "$DATA_DIR" \
+  --serve \
+  --port 8080 \
+  --bind 0.0.0.0
