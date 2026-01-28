@@ -35,10 +35,10 @@ else
   echo "graph.obj already present, skipping download."
 fi
 
-# Show contents of data dir
+# Show contents of data dir for logs
 echo "Contents of $DATA_DIR:"
 ls -lh "$DATA_DIR" || true
 
-# Start OTP
-echo "Starting OTP..."
-exec otp --load "$DATA_DIR" --serve --port 8080 --bind 0.0.0.0
+# Start OTP using the image's entrypoint script
+echo "Starting OTP (via /docker-entrypoint.sh)..."
+exec /docker-entrypoint.sh --load "$DATA_DIR" --serve --port 8080 --bind 0.0.0.0
