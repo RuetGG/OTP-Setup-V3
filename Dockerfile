@@ -1,27 +1,42 @@
-# Use Eclipse Temurin with Alpine - smallest and most reliable
 FROM eclipse-temurin:17-jdk-alpine
 
 WORKDIR /otp
 
-# Install curl
-RUN apk add --no-cache curl
+# Install both curl and wget
+RUN apk add --no-cache curl wget
 
-# Create data directory
 RUN mkdir -p /otp/data
 
-# Copy any local files
 COPY . /otp/
 
-# Expose port
 EXPOSE 8080
 
-# Download and run with retry logic
+# Use this script that handles Google Drive properly
 CMD sh -c ' \
-    echo "=== Starting OTP on Render ===" && \
-    echo "Downloading otp.jar..." && \
-    curl -L -o /otp/otp.jar "https://drive.google.com/uc?export=download&id=1Up4Ypph45B2W5WuX1TGMXpRElrtcgUBh" && \
-    echo "Downloading graph.obj..." && \
-    curl -L -o /otp/data/graph.obj "https://drive.google.com/uc?export=download&id=1tdALzkrgxhhjIsF-DEs3XgEDNsC8QWHc" && \
-    echo "Starting OTP server..." && \
+    echo "=== Starting OTP ===" && \
+    echo "Downloading files..." && \
+    \
+    # Method 1: Try wget with cookie handling \
+    wget --quiet --save-cookies /tmp/cookies.txt \
+         "https://docs.google.com/uc?export=download&id=1Up4Ypph45B2W5WuX1TGMXpRElrtcgUBh" -O- | \
+    grep -o \'\''confirm=[0-9A-Za-z_]*\'\'' | \
+    tail -1 | \
+    xargs -I{} wget --quiet --load-cookies /tmp/cookies.txt \
+         "https://docs.google.com/uc?export=download&{}\&id=1Up4Ypph45B2W5WuX1TGMXpRElrtcgUBh" -O /otp/otp.jar && \
+    \
+    wget --quiet --save-cookies /tmp/cookies.txt \
+         "https://docs.google.com/uc?export=download&id=1tdALzkrgxhhjIsF-DEs3XgEDNsC8QWHc" -O- | \
+    grep -o \'\''confirm=[0-9A-Za-z_]*\'\'' | \
+    tail -1 | \
+    xargs -I{} wget --quiet --load-cookies /tmp/cookies.txt \
+         "https://docs.google.com/uc?export=download&{}\&id=1tdALzkrgxhhjIsF-DEs3XgEDNsC8QWHc" -O /otp/data/graph.obj && \
+    \
+    rm -f /tmp/cookies.txt && \
+    \
+    echo "File sizes:" && \
+    ls -lh /otp/otp.jar && \
+    ls -lh /otp/data/graph.obj && \
+    \
+    echo "Starting OTP..." && \
     java -Xmx384M -Xms256M -jar otp.jar --load /otp/data --serve --port 8080 --bind 0.0.0.0 \
     '
